@@ -1,0 +1,176 @@
+---
+title: "MILLIONS OUT, MILLIONS BEHIND"
+format: 
+  html:
+    mainfont: Times New Roman
+execute:
+  echo: false
+---
+
+```{r ,  echo=FALSE}
+#| warning: false
+knitr::opts_chunk$set(echo = FALSE)
+library(ggplot2)
+library(dplyr)
+library(readr)
+```
+
+## Introduction
+
+**31 million** girls around the world of primary school age are [not]{.underline} enrolled in school
+
+**Only 49% of countries have achieved gender parity in primary education** Even in the least scholarized countries there is still an average 6,3% of boys attending school more than girls. Concerns are affecting especially girls of Chad, where the difference is about 17,73%.\
+Education is theoretically compulsory between ages 6 and 12, but many social and economic barriers deny it for girls. This is the country with the highest level of gender inequality in the world.
+
+## Child deprivation
+
+Children are deprived of education for various reasons, but **poverty** remains one of the most obstinate barriers: the correlation with GDP states that countries with a lower GDP are more likely to face limited access to educational resources. Children living through economic fragility, political instability, conflict or natural disaster are more likely to be cut off from schooling – as are those with **disabilities**, or from **ethnic minorities**. In **some countries, education opportunities for girls remain severely limited, even if the enrollment rate has grown up during the last two decades**.
+
+```{r , echo=FALSE}
+#| warning: false
+
+#data <- read.csv('School enrollment, gender parity index.csv')
+
+library(RColorBrewer)
+data_U <- read.csv('School enrollment, gender parity index.csv')
+
+data44 <- data_U[data_U$Year %in% c(2000:2021) , ]
+
+
+# Display the color palettes
+#display.brewer.all()
+
+# Choose a palette that fits your number of categories
+palette_name <- "Oranges"  # This is an example, choose based on your preference and number of categories
+
+
+ggplot(data44, aes(y=Value, x=Year, fill=Disaggregation)) +
+  geom_bar(position="stack", stat="identity") +  # Scatter points with varying colors for different years
+  #geom_smooth(method=lm, se=FALSE, color="black") +  # Linear trend line without a confidence interval
+  labs(title="School enrollment, primary and secondary (gross),\n gender parity index (GPI)",
+       y="School enrollment, primary and secondary (gross)",
+       x="Year") +
+  theme_minimal() + # Minimal theme for a clean look
+ #theme(legend.position = "none") +
+   scale_fill_brewer(palette=palette_name) #+
+   #theme(axis.text.x = element_text(angle = 90))
+
+
+
+
+
+```
+
+## GDP per Capita  by Country
+
+A family facing financial strain might prioritize marrying off a daughter to ease the burden, further limiting her education. Although poverty and low GDP are the main causes, many of these issues might be correlated to the cultureof the country. Globally, UNICEF estimates that 12 MILLION girls between 15-19 years old are already married, so ONE IN THREE GIRLS in the developing world. This translates to a major impact on global female education rates. If in primary schools, the gender gap plays a pivotal role in differenciating male and female education status, the gap widens when talking of upper-classes of education.
+
+```{r, echo=FALSE}
+#| warning: false
+#| 
+library(sf)
+library(rnaturalearth)
+library(rnaturalearthdata)
+world <- ne_countries(scale = "medium", returnclass = "sf")
+
+data <- read.csv('unicef_metadata.csv')
+data_1 <- data[data$year %in% c( 2018) , ]
+
+
+#data_2020$country_code <- tolower(data_2020$alpha_3_code)
+
+world <- merge(world, data_1, by.x = 'iso_a3', by.y = 'alpha_3_code', all.x = TRUE)
+
+ggplot() +
+  geom_sf(data = world, aes(fill = GDP.per.capita..constant.2015.US..)) +
+ scale_fill_viridis_b(option = "mako") + 
+  labs(fill="GDP per Capita", title="GDP per Capita (2018) by Country") +
+  theme_minimal()
+```
+
+Even in the least scholarized countries there is still an average **6,3%** of boys attending school more than girls. 
+
+Concerns are affecting especially girls of **Chad**, where **the difference is about 17,73%.**  
+
+Education is theoretically compulsory between ages 6 and 12, but many social and economic barriers deny it for girls.
+
+This is the country with the highest level of gender inequality in the world. 
+
+## Life Expectancy Over Years by Country
+
+There is a **negative correlation** between out-of-school rates and life expectancy at birth. *As life expectancy at birth increases, the out-of-school rate decreases*,so there is a link between education and health outcomes.
+
+It is not a case that all the countries with the highest out-of-school rate also share a high percentage of people living in a rural environment, as the following viz shows.
+
+```{r, echo=FALSE}
+#| warning: false
+
+
+data <- read.csv('unicef_metadata.csv')
+afghanistan_data <- subset(data, country == 'Afghanistan')
+
+ggplot(data[1:1000,], aes(x=year, y=Life.expectancy.at.birth..total..years., color=country)) +
+  geom_line() +
+  geom_point() +
+  labs(title="Life expectancy at birth, total (years)", x="Year", y="Life expectancy ")
+
+
+```
+
+## School drop out rate vs Life expectancy
+
+```{r, echo=FALSE}
+#| warning: false
+
+ data <- read.csv('unicef_indicator_1.csv')
+data_2 <- data[data$time_period %in% c(2020) & data$sex %in% c("Total") , ]
+
+
+data_3 <- read.csv('unicef_metadata.csv')
+data_4 <- data_3[data_3$year %in% c(2020) , ]
+
+data_5 <-  inner_join(data_2, data_4, by = "country")
+  
+
+#data_44 <- inner_join(data_U, data_33, by = "country")
+
+fun_color_range <- colorRampPalette(c("yellow", "#AA336A")) 
+my_colors <- fun_color_range(25)  
+
+
+ggplot(data_5, aes(x=Life.expectancy.at.birth..total..years., y=obs_value)) +
+  geom_point(aes( alpha=0.6), size = 5) +  # Scatter points with varying colors for different years
+  geom_smooth(method=lm, se=FALSE, color="black") +  # Linear trend line without a confidence interval
+  labs(title="correlation between School drop out rate vs Life expectancy",
+       x="Life expectancy",
+       y="Drop out rate") +
+  theme_minimal() + # Minimal theme for a clean look
+ theme(legend.position = "none") +
+  scale_colour_gradientn(colors = my_colors   ) 
+
+
+  
+  
+
+```
+
+```{r , echo=FALSE}
+
+ data <- read.csv('unicef_indicator_1.csv')
+data_2 <- data[data$time_period %in% c(2020) & data$sex %in% c("Female") , ]
+
+ggplot(data_2[1:20,], aes(y=obs_value, x=country, fill = "#AA336A")) +
+  geom_bar(stat = "identity") +  # Scatter points with varying colors for different years
+  #geom_smooth(method=lm, se=FALSE, color="black") +  # Linear trend line without a confidence interval
+  labs(title="Countries with the highest percetage of girs drop out rate",
+       y="drop out rate",
+       x="Year") +
+  theme_minimal() + # Minimal theme for a clean look
+ #theme(legend.position = "none") +
+  # scale_fill_brewer(palette=palette_name) + #+
+   theme(axis.text.x = element_text(angle = 90))
+
+
+
+
+```
